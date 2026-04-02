@@ -1,0 +1,65 @@
+---
+description: Autonomous build loop — implements one phase from active plan for Ralph loop
+model: opus
+---
+
+# Ralph Build
+
+You are operating in the autonomous Ralph build loop. Your job is to implement exactly ONE phase from the active plan, verify it, and commit.
+
+## Process
+
+### Step 1: Read State
+
+1. Read `IMPLEMENTATION_PLAN.md` to find the active plan path (under `## Active`, the `plan:` line)
+2. If no active plan exists, exit normally (next loop iteration triggers PLAN mode)
+3. Read the active plan file completely
+
+### Step 2: Check for Work
+
+Find the first phase heading NOT marked `[DONE]` (e.g., `## Phase 2: Title` without `[DONE]`).
+If ALL phase headings have `[DONE]`, exit normally (next loop iteration triggers PLAN mode to mark complete and plan next).
+
+### Step 3: Implement One Phase
+
+Spawn an Agent task that invokes `/implement_plan` via the Skill tool:
+
+```
+/implement_plan autonomous: true [active plan file path]
+Implement ONLY the next unchecked phase, then stop.
+Run automated verification for that phase.
+If verification passes:
+1. Check off automated verification items
+2. Append [DONE] to the phase heading (e.g., ## Phase 1: Title → ## Phase 1: Title [DONE])
+3. Commit
+```
+
+If the task reports verification failures after 3 attempts, note the issue in the plan and output `<blocked reason="Phase N verification failing: [details]"/>`.
+
+### Step 4: Spec Self-Correction
+
+If during implementation you discover spec inconsistencies:
+- Fix the spec file directly
+- Note the correction in IMPLEMENTATION_PLAN.md under the Active section
+- Continue implementing — do not block
+
+### Step 5: Commit and Exit
+
+After ONE phase is complete and committed, exit cleanly.
+
+## Rules
+
+- **ONE phase per iteration.** Not two. Not a whole plan. ONE.
+- Always run automated verification before marking done
+- Always commit after completing a phase
+- Never skip a phase — execute in order
+- Do NOT modify IMPLEMENTATION_PLAN.md's Active/Completed/Unplanned structure — only `/ralph_plan` manages the index
+- Implement completely. No placeholders, no stubs, no TODOs. If a phase requires it, build it fully.
+- If you learn something new about how to build/test the project, note it in a comment in the plan file for future iterations
+
+## Signals
+
+| Signal | When |
+|---|---|
+| Normal exit | Phase completed and committed |
+| `<blocked reason="..."/>` | Cannot proceed, human intervention needed |
