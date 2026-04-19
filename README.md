@@ -9,12 +9,9 @@ harness/
 ├── loop.sh                    # Orchestrator — runs the plan/build state machine
 ├── parse_stream.py            # Stream parser — filters Claude output, detects signals
 ├── IMPLEMENTATION_PLAN.md     # State index — tracks active/staging/completed work
-├── SPEC_core.md               # Spec template — language-agnostic service specification
-├── SPEC_language.md           # Spec language guide — how to word specifications
-├── SPEC_shell.md              # Spec example — filled-in spec for reference
 ├── .claude/
 │   ├── settings.json          # Claude Code project settings
-│   ├── commands/              # Slash commands (skills)
+│   ├── commands/              # Slash commands
 │   │   ├── ralph_plan.md      # Planning state machine (PLAN mode)
 │   │   ├── ralph_build.md     # Build executor (BUILD mode)
 │   │   ├── create_jtbd.md     # Jobs to Be Done document creation
@@ -56,18 +53,23 @@ cp /tmp/harness-src/.gitignore .  # or merge with your existing one
 cp -r /tmp/harness-src/.claude .
 cp -r /tmp/harness-src/thoughts .
 
-# Optional: copy spec templates
-cp /tmp/harness-src/SPEC_core.md .
-cp /tmp/harness-src/SPEC_language.md .
-
 chmod +x loop.sh
 
 rm -rf /tmp/harness-src
 ```
 
-### 2. Write your SPEC.md
+### 2. Install the `spec-creator` skill and write your SPEC.md
 
-Create a `SPEC.md` in your project root. Use `SPEC_core.md` as a template and `SPEC_language.md` for style guidance.
+Install [`spec-creator`](https://github.com/lightfastai/skills/tree/main/skills/spec-creator) from `lightfastai/skills`:
+
+```bash
+git clone https://github.com/lightfastai/skills.git /tmp/skills-src
+mkdir -p .claude/skills
+cp -r /tmp/skills-src/skills/spec-creator .claude/skills/
+rm -rf /tmp/skills-src
+```
+
+Then ask Claude to draft or update `SPEC.md`. The skill auto-triggers on requests like "write a spec for X" or "update SPEC.md to add Y", and walks the full template and language rules for you.
 
 ### 3. Create a JTBD document
 
@@ -166,6 +168,10 @@ These can be used standalone (outside the loop) in any Claude Code session:
 | `/research_codebase` | Deep codebase research |
 | `/research_codebase_lightweight` | Quick focused research |
 | `/commit` | Create git commits |
+
+## Skills
+
+Claude Code auto-triggers agent skills from `.claude/skills/` by intent match. The harness ships none by default — install `spec-creator` and future skills from [`lightfastai/skills`](https://github.com/lightfastai/skills). Quick Start §2 shows the install command.
 
 ## Logging
 
